@@ -6,6 +6,8 @@ import numpy as np
 def plot_all_parameters(ds, label):
     time_str = str(ds["tp"].coords["time"].values)
     fig, axes = plt.subplots(3, 1, figsize=(8, 18), subplot_kw={'projection': ccrs.PlateCarree()})
+    # increase vertical spacing between stacked subplots
+    fig.subplots_adjust(hspace=0.35)  # try 0.2-0.6 to taste
 
     # Precipitation
     ax = axes[0]
@@ -57,5 +59,5 @@ def plot_all_parameters(ds, label):
     # cbar = plt.colorbar(im, ax=ax, orientation="vertical", fraction=0.03, pad=0.02)
     # cbar.ax.set_aspect(0.2)
 
-    plt.tight_layout()
+    # plt.tight_layout()
     plt.show()
