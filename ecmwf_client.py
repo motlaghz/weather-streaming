@@ -7,7 +7,6 @@ def download_forecast(target, area=None):
         "type": "fc", # forecast
         "step": 6, # 6-hour forecast
         "date": -1, # latest available
-        "time": 0, # 00 UTC
         "param": "tp/10u/10v/tcc", # total precipitation, 10m U and V wind, total cloud cover
         "target": target # path to save the file
     }
