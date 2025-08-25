@@ -14,7 +14,6 @@ def plot_all_parameters(ds, label):
     im = ds["tp"].plot(ax=ax, cmap="Blues", transform=ccrs.PlateCarree(), 
         cbar_kwargs={
         "label": "Total Precipitation (m)",
-        "shrink": 0.5,
         "pad": 0.02,
         "orientation": "vertical",
         })
@@ -37,7 +36,7 @@ def plot_all_parameters(ds, label):
     Lon, Lat = np.meshgrid(lons, lats)
     wind_speed = np.sqrt(u**2 + v**2)
     q = ax.quiver(Lon, Lat, u, v, wind_speed, cmap="coolwarm", transform=ccrs.PlateCarree(), scale=700)
-    cbar = plt.colorbar(q, ax=ax, orientation="vertical", shrink=0.5,pad=0.02)
+    cbar = plt.colorbar(q, ax=ax, orientation="vertical",pad=0.02)
     cbar.set_label("Wind speed (m/s)")
 
     # Cloud cover
@@ -45,7 +44,6 @@ def plot_all_parameters(ds, label):
     im = ds["tcc"].plot(ax=ax, cmap="bone", transform=ccrs.PlateCarree(),  
         cbar_kwargs={
         "label": "Total Cloud Cover (fraction)",
-        "shrink": 0.5,
         "pad": 0.02,
         "orientation": "vertical",
         })
