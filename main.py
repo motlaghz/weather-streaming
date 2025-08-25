@@ -1,13 +1,13 @@
 import time
 import xarray as xr
-from ecmwf_client import download_forecast
+from ecmwf_client import download_latest_run
 from plotting import plot_all_parameters
 
 def run_pipeline():
     while True:
         # Download global and regional forecasts
-        download_forecast("forecast_globe.grib")
-        download_forecast("forecast_nordic.grib", area="72/-25/54/40")
+        _ , _ = download_latest_run("forecast_globe.grib")
+        _ , _ = download_latest_run("forecast_nordic.grib", area="72/-25/54/40")
 
         for file_name in ["forecast_nordic.grib", "forecast_globe.grib"]:
             label = file_name.split("_")[-1].split(".")[0]  # gets 'nordic' or 'globe'
