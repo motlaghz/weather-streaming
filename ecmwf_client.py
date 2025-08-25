@@ -1,7 +1,7 @@
 from ecmwf.opendata import Client
 
 def download_forecast(target, area=None):
-    client = Client(source="ecmwf")
+    client = Client(model="aifs-single", source="ecmwf", resol="0p25")
     params = {
         "stream": "oper", # operational data
         "type": "fc", # forecast
