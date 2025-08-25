@@ -3,8 +3,13 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import numpy as np
 
-def plot_all_parameters(ds, label):
-    time_str = str(ds["tp"].coords["time"].values)
+def plot_all_parameters(ds, label, time_override=None):
+    # prefer GRIB time coord if present, otherwise use download time
+    try:
+        time_str = str(ds["tp"].coords["time"].values)
+    except Exception:
+        time_str = time_override or "unknown time"
+
     fig, axes = plt.subplots(3, 1, figsize=(8, 18), subplot_kw={'projection': ccrs.PlateCarree()})
     # increase vertical spacing between stacked subplots
     fig.subplots_adjust(hspace=0.35)  # try 0.2-0.6 to taste
