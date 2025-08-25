@@ -22,8 +22,6 @@ def plot_all_parameters(ds, label):
     ax.add_feature(cfeature.COASTLINE)
     ax.add_feature(cfeature.BORDERS)
     ax.add_feature(cfeature.LAND, edgecolor='black', alpha=0.3)
-    # cbar = plt.colorbar(im, ax=ax, orientation="vertical", fraction=0.03, pad=0.02)
-    # cbar.ax.set_aspect(0.2)
 
     # Wind (arrows colored by speed)
     ax = axes[1]
@@ -40,7 +38,6 @@ def plot_all_parameters(ds, label):
     wind_speed = np.sqrt(u**2 + v**2)
     q = ax.quiver(Lon, Lat, u, v, wind_speed, cmap="coolwarm", transform=ccrs.PlateCarree(), scale=700)
     cbar = plt.colorbar(q, ax=ax, orientation="vertical", shrink=0.5,pad=0.02)
-    # cbar.ax.set_aspect(30)
     cbar.set_label("Wind speed (m/s)")
 
     # Cloud cover
@@ -56,8 +53,5 @@ def plot_all_parameters(ds, label):
     ax.add_feature(cfeature.COASTLINE)
     ax.add_feature(cfeature.BORDERS)
     ax.add_feature(cfeature.LAND, edgecolor='black', alpha=0.3)
-    # cbar = plt.colorbar(im, ax=ax, orientation="vertical", fraction=0.03, pad=0.02)
-    # cbar.ax.set_aspect(0.2)
 
-    # plt.tight_layout()
     plt.show()
