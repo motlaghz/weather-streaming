@@ -1,0 +1,17 @@
+from ecmwf.opendata import Client
+
+def download_forecast(target, area=None):
+    client = Client(source="ecmwf")
+    params = {
+        "stream": "oper", # operational data
+        "type": "fc", # forecast
+        "step": 6, # 6-hour forecast
+        "date": -1, # latest available
+        "time": 0, # 00 UTC
+        "param": "tp/10u/10v", # total precipitation, 10m U and V wind, total cloud cover
+        "target": target # path to save the file
+    }
+    if area:
+        params["area"] = area
+    client.retrieve(**params)
+    print(f"Forecast saved to {target}")
