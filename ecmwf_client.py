@@ -14,13 +14,11 @@ def download_latest_run(target, area=None):
                 "type":"fc", # forecast
                 "stream":"oper", # operational stream
                 "step": 6, # 6-hour forecast
-                "param":"tp/10u/10v/tcc", # precipitation, 10m u and v wind, total cloud cover
+                "param":["tp", "10u", "10v", "tcc"], # precipitation, 10m u and v wind, total cloud cover
                 "date":date_str, # the most recent date
                 "time":h, # the hour we are trying
                 "target":target # output file name
             }
-            if area:
-                params["area"] = area # when the nordic region is desired
             client.retrieve(**params)
             print(f"Latest available run found: {date_str} {h:02d} UTC")
             return date_str, h
