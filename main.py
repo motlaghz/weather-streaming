@@ -10,8 +10,8 @@ def run_pipeline():
         
         file_name = "forecast_globe.grib" 
         with xr.open_dataset(file_name, engine="cfgrib") as ds:
-            plot_all_parameters(ds, "global", region="global")
-            plot_all_parameters(ds, "nordic", region="nordic")
+            # plot_all_parameters(ds, region="global")
+            plot_all_parameters(ds)
 
         # Wait before next update (e.g., 1 hour)
         time.sleep(3600)
