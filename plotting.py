@@ -32,7 +32,7 @@ def plot_all_parameters(ds):
             cbar.remove()
         plot_axes, colorbars = [], []
 
-        time_str = str(ds["tp"].coords["valid_time"].values)
+        time_str = str(ds["tp"].coords["valid_time"].values)[:19]
 
         # if nothing selected, nothing to draw
         if not selected_params or not selected_regions:
