@@ -1,4 +1,6 @@
 ecmwf-opendata
+numpy
+datetime
 xarray
 matplotlib
 cartopy
