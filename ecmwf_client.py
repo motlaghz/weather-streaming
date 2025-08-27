@@ -1,5 +1,5 @@
 from ecmwf.opendata import Client
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def download_latest_run(target, area=None):
     client = Client(model="aifs-single", source="ecmwf", resol="0p25")
@@ -13,10 +13,10 @@ def download_latest_run(target, area=None):
             params={
                 "type":"fc", # forecast
                 "stream":"oper", # operational stream
-                "step": 6, # 6-hour forecast
-                "param":["tp", "10u", "10v", "tcc"], # precipitation, 10m u and v wind, total cloud cover
-                "date":date_str, # the most recent date
-                "time":h, # the hour we are trying
+                "step": list(range(0, 49, 6)),  # forecasts every 6h up to +48h
+                "param": ["tp", "10u", "10v", "tcc"], # precipitation, 10m u and v wind, total cloud cover
+                "date": date_str, # the most recent date
+                "time": h, # the hour we are trying
                 "target":target # output file name
             }
             client.retrieve(**params)
@@ -27,5 +27,5 @@ def download_latest_run(target, area=None):
             continue
 
     # if none found, try yesterday 18UTC
-    yesterday = (now - datetime.timedelta(days=1)).strftime("%Y%m%d")
+    yesterday = (now - timedelta(days=1)).strftime("%Y%m%d")
     return yesterday, 18
