@@ -45,7 +45,7 @@ def update_regions(current_regions, label):
 # Main plotting logic
 # -------------------------------
 
-def plot_map(fig, ds, selected_params, selected_regions, time_index, plot_axes, colorbars):
+def plot_map(fig, ds1, ds2, selected_params, selected_regions, time_index, plot_axes, colorbars):
     """Draw the selected parameters and regions at the specified time step."""
     # remove only previous plotting axes
     for ax in plot_axes:
@@ -55,9 +55,6 @@ def plot_map(fig, ds, selected_params, selected_regions, time_index, plot_axes, 
 
     plot_axes = []
     colorbars_new = []
-
-    ds_t = ds.isel(step=time_index)
-    time_str = str(ds_t["tp"].coords["valid_time"].values)[:19].replace("T", ", ")
 
     if not selected_params or not selected_regions:
         fig.canvas.draw_idle()
@@ -71,23 +68,23 @@ def plot_map(fig, ds, selected_params, selected_regions, time_index, plot_axes, 
 
     for i, p in enumerate(selected_params):
         for j, region in enumerate(selected_regions):
-            ax = fig.add_subplot(gs[i, j], projection=ccrs.PlateCarree())
-            plot_axes.append(ax)
-
-            # region extent
+            # --- choose dataset based on region ---
             if region.lower() == "nordic":
-                extent = [5, 32, 55, 72]
+                ds = ds2
+                extent = [5, 31, 54, 72]
+                tp_var = "prate"
             else:
+                ds = ds1
                 extent = [ds.longitude.min().item(), ds.longitude.max().item(),
                           ds.latitude.min().item(), ds.latitude.max().item()]
+                tp_var = "tp"
 
-            lon_min, lon_max, lat_min, lat_max = extent
-            if ds.latitude[0] > ds.latitude[-1]:
-                ds_sel = ds_t.sel(latitude=slice(lat_max, lat_min),
-                                  longitude=slice(lon_min, lon_max))
-            else:
-                ds_sel = ds_t.sel(latitude=slice(lat_min, lat_max),
-                                  longitude=slice(lon_min, lon_max))
+            ds_t = ds.isel(step=time_index)
+            # use correct precipitation variable name
+            time_str = str(ds_t[tp_var].coords["valid_time"].values)[:19].replace("T", ", ")
+
+            ax = fig.add_subplot(gs[i, j], projection=ccrs.PlateCarree())
+            plot_axes.append(ax)
 
             ax.set_extent(extent, crs=ccrs.PlateCarree())
             ax.add_feature(cfeature.COASTLINE)
@@ -95,32 +92,34 @@ def plot_map(fig, ds, selected_params, selected_regions, time_index, plot_axes, 
 
             # --- plotting each parameter ---
             if p == "tp":
-                im = ds_sel["tp"].plot(ax=ax, cmap="Blues", transform=ccrs.PlateCarree(),
-                                       add_colorbar=False)
+                im = ds_t[tp_var].plot(ax=ax, cmap="Blues", transform=ccrs.PlateCarree(),
+                           add_colorbar=False, vmin=0, vmax=0.05)  # consistent range
                 cbar = fig.colorbar(im, ax=ax, orientation="vertical", pad=0.02)
                 cbar.set_label("Total Precipitation (m)")
                 colorbars_new.append(cbar)
                 ax.set_title(f"Precipitation at {time_str} ({region})")
 
             elif p == "wind":
-                skip = (slice(None, None, 3), slice(None, None, 3)) if region.lower() == "nordic" else (slice(None, None, 10), slice(None, None, 10))
-                lats = ds_sel["latitude"].values[skip[0]]
-                lons = ds_sel["longitude"].values[skip[1]]
-                u = ds_sel["u10"].values[skip]
-                v = ds_sel["v10"].values[skip]
+                skip = (slice(None, None, 10), slice(None, None, 10)) if region.lower() == "nordic" else (slice(None, None, 10), slice(None, None, 10))
+                lats = ds_t["latitude"].values[skip[0]]
+                lons = ds_t["longitude"].values[skip[1]]
+                u = ds_t["u10"].values[skip]
+                v = ds_t["v10"].values[skip]
                 Lon, Lat = np.meshgrid(lons, lats)
                 wind_speed = np.sqrt(u**2 + v**2)
                 scale = 700 if region == "global" else 150
+                vmin, vmax = 0, 40
                 q = ax.quiver(Lon, Lat, u, v, wind_speed, cmap="coolwarm",
-                              transform=ccrs.PlateCarree(), scale=scale)
+                              transform=ccrs.PlateCarree(), scale=scale,
+                              clim=(vmin, vmax))
                 cbar = fig.colorbar(q, ax=ax, orientation="vertical", pad=0.02)
                 cbar.set_label("Wind speed (m/s)")
                 colorbars_new.append(cbar)
                 ax.set_title(f"Wind at {time_str} ({region})")
 
             elif p == "tcc":
-                im = ds_sel["tcc"].plot(ax=ax, cmap="bone", transform=ccrs.PlateCarree(),
-                                        add_colorbar=False)
+                im = ds_t["tcc"].plot(ax=ax, cmap="bone", transform=ccrs.PlateCarree(),
+                          add_colorbar=False, vmin=0, vmax=1)  # fixed 0–1
                 cbar = fig.colorbar(im, ax=ax, orientation="vertical", pad=0.02)
                 cbar.set_label("Total Cloud Cover (fraction)")
                 colorbars_new.append(cbar)
@@ -129,45 +128,48 @@ def plot_map(fig, ds, selected_params, selected_regions, time_index, plot_axes, 
     fig.canvas.draw_idle()
     return plot_axes, colorbars_new
 
-# -------------------------------
-# Entry point function
-# -------------------------------
 
-def plot_all_parameters(ds):
+def plot_all_parameters(ds1, ds2):
     """Main function to display interactive weather maps with widgets."""
     current_params = set(["tp"])
     current_regions = set(["nordic"])
     current_step = 0
 
-    n_steps = len(ds["step"])
+    # use global dataset for step count
+    n_steps = len(ds1["step"])
     fig = plt.figure(figsize=(14, 10))
 
     # create widgets
-    check_param, check_region, step_slider = setup_widgets(fig, n_steps,ds)
+    check_param, check_region, step_slider = setup_widgets(fig, n_steps, ds1)
     widget_axes = [check_param.ax, check_region.ax, step_slider.ax]
 
     plot_axes = []  # list to track plotting axes
     colorbars = []  # list to track colorbars
+
     # connect callbacks
     def on_param_change(label):
         update_params(current_params, label)
         nonlocal plot_axes, colorbars
-        plot_axes, colorbars = plot_map(fig, ds, current_params, current_regions, int(step_slider.val), plot_axes, colorbars)
+        plot_axes, colorbars = plot_map(fig, ds1, ds2, current_params, current_regions,
+                                        int(step_slider.val), plot_axes, colorbars)
 
     def on_region_change(label):
         update_regions(current_regions, label)
         nonlocal plot_axes, colorbars
-        plot_axes, colorbars = plot_map(fig, ds, current_params, current_regions, int(step_slider.val), plot_axes, colorbars)
+        plot_axes, colorbars = plot_map(fig, ds1, ds2, current_params, current_regions,
+                                        int(step_slider.val), plot_axes, colorbars)
 
     def on_slider_change(val):
         nonlocal plot_axes, colorbars
-        plot_axes, colorbars = plot_map(fig, ds, current_params, current_regions, int(val), plot_axes, colorbars)
+        plot_axes, colorbars = plot_map(fig, ds1, ds2, current_params, current_regions,
+                                        int(val), plot_axes, colorbars)
 
     check_param.on_clicked(on_param_change)
     check_region.on_clicked(on_region_change)
     step_slider.on_changed(on_slider_change)
 
     # initial draw
-    plot_axes, colorbars = plot_map(fig, ds, current_params, current_regions, current_step, plot_axes, colorbars)
+    plot_axes, colorbars = plot_map(fig, ds1, ds2, current_params, current_regions,
+                                    current_step, plot_axes, colorbars)
 
     plt.show()
