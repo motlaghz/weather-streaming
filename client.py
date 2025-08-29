@@ -17,7 +17,7 @@ def download_latest_run(target_global, target_scandinavia):
             url = (
                 "https://opendata.fmi.fi/download?"
                 "producer=harmonie_scandinavia_surface&"
-                "param=precipitation1h,windums,windvms,totalcloudcover&"
+                "param=PrecipitationAmount,windums,windvms,totalcloudcover&"
                 f"origintime={origin_datetime.isoformat()}Z&"
                 "bbox=5,54,31,72&"
                 "projection=EPSG:4326&"
