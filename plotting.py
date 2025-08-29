@@ -74,7 +74,7 @@ def plot_map(fig, ds1, ds2, selected_params, selected_regions, time_index,
     time_str = str(ds_t_global["tp"].coords["valid_time"].values)[:19].replace("T", ", ")
     
     # update suptitle (slightly higher)
-    suptitle.set_y(0.99)
+    suptitle.set_y(1.0)
     suptitle.set_x(0.6)
     suptitle.set_text(f"Valid time: {time_str}")
 
@@ -114,8 +114,9 @@ def plot_map(fig, ds1, ds2, selected_params, selected_regions, time_index,
 
             # --- plotting each parameter ---
             if p == "Total Precipitation":
-                im = ds_t[tp_var].plot(ax=ax, cmap="Blues", transform=ccrs.PlateCarree(),
-                                       add_colorbar=False, vmin=0, vmax=50)
+                tp_m = ds_t[tp_var] / 1000
+                im = tp_m.plot(ax=ax, cmap="Blues", transform=ccrs.PlateCarree(),
+                                       add_colorbar=False, vmin=0, vmax=0.050)
                 cbar = fig.colorbar(im, ax=ax, orientation="vertical", pad=0.02, 
                                     fraction=0.04 if region == "Scandinavia" else 0.025)
                 cbar.set_label("Total Precipitation (m)")
