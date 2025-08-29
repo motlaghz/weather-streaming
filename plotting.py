@@ -72,7 +72,7 @@ def plot_map(fig, ds1, ds2, selected_params, selected_regions, time_index, plot_
             if region.lower() == "nordic":
                 ds = ds2
                 extent = [5, 31, 54, 72]
-                tp_var = "prate"
+                tp_var = "rain_con"  # Scandinavian precipitation variable
             else:
                 ds = ds1
                 extent = [ds.longitude.min().item(), ds.longitude.max().item(),
@@ -93,14 +93,14 @@ def plot_map(fig, ds1, ds2, selected_params, selected_regions, time_index, plot_
             # --- plotting each parameter ---
             if p == "tp":
                 im = ds_t[tp_var].plot(ax=ax, cmap="Blues", transform=ccrs.PlateCarree(),
-                           add_colorbar=False, vmin=0, vmax=0.05)  # consistent range
-                cbar = fig.colorbar(im, ax=ax, orientation="vertical", pad=0.02)
+                           add_colorbar=False, vmin=0, vmax=50)  # consistent range
+                cbar = fig.colorbar(im, ax=ax, orientation="vertical", pad=0.02, fraction=0.025)
                 cbar.set_label("Total Precipitation (m)")
                 colorbars_new.append(cbar)
                 ax.set_title(f"Precipitation at {time_str} ({region})")
 
             elif p == "wind":
-                skip = (slice(None, None, 10), slice(None, None, 10)) if region.lower() == "nordic" else (slice(None, None, 10), slice(None, None, 10))
+                skip = (slice(None, None, 10), slice(None, None, 10))
                 lats = ds_t["latitude"].values[skip[0]]
                 lons = ds_t["longitude"].values[skip[1]]
                 u = ds_t["u10"].values[skip]
@@ -112,15 +112,15 @@ def plot_map(fig, ds1, ds2, selected_params, selected_regions, time_index, plot_
                 q = ax.quiver(Lon, Lat, u, v, wind_speed, cmap="coolwarm",
                               transform=ccrs.PlateCarree(), scale=scale,
                               clim=(vmin, vmax))
-                cbar = fig.colorbar(q, ax=ax, orientation="vertical", pad=0.02)
+                cbar = fig.colorbar(q, ax=ax, orientation="vertical", pad=0.02, fraction=0.025)
                 cbar.set_label("Wind speed (m/s)")
                 colorbars_new.append(cbar)
                 ax.set_title(f"Wind at {time_str} ({region})")
 
             elif p == "tcc":
                 im = ds_t["tcc"].plot(ax=ax, cmap="bone", transform=ccrs.PlateCarree(),
-                          add_colorbar=False, vmin=0, vmax=1)  # fixed 0–1
-                cbar = fig.colorbar(im, ax=ax, orientation="vertical", pad=0.02)
+                          add_colorbar=False, vmin=0, vmax=100)
+                cbar = fig.colorbar(im, ax=ax, orientation="vertical", pad=0.02, fraction=0.025)
                 cbar.set_label("Total Cloud Cover (fraction)")
                 colorbars_new.append(cbar)
                 ax.set_title(f"Cloud Cover at {time_str} ({region})")
