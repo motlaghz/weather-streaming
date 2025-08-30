@@ -98,7 +98,7 @@ def plot_map(fig, ds1, ds2, selected_params, selected_regions, time_index,
             # select dataset and extent
             if region == "Scandinavia":
                 ds = ds2
-                extent = [5, 31, 54, 72]
+                extent = [5, 31, 54, 72] # Scandinavia bbox
                 tp_var = "rain_con"
             else:  # Global
                 ds = ds1
