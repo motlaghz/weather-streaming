@@ -4,7 +4,6 @@ from ingesting import download_latest_run
 from plotting import plot_all_parameters
 from scandinavia_split import split_datasets
 
-
 def run_pipeline():
     while True:
         # Download forecasts
