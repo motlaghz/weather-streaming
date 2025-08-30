@@ -31,7 +31,7 @@ def run_pipeline() -> None:
     interactive visualizations. Runs continuously with periodic updates.
     """
     logging.info("Starting weather data pipeline...")
-
+    last_date_str, last_hour = None, None # Track last processed run
     try:
         while True:
             logging.info("Starting new pipeline iteration...")
@@ -41,6 +41,14 @@ def run_pipeline() -> None:
                 GLOBAL_FORECAST_FILE, SCANDINAVIA_FORECAST_FILE
             )
             logging.info(f"Downloaded forecasts for {date_str} {hour:02d} UTC")
+
+            # Check if the run is the newest
+            if (date_str, hour) == (last_date_str, last_hour):
+                logging.info(
+                    f"No new forecast run available ({date_str} {hour:02d} UTC). Skipping update."
+                )
+            else:
+                logging.info(f"Downloaded forecasts for {date_str} {hour:02d} UTC")
 
             # Process Scandinavian data
             precipitation, u_wind, v_wind, cloud_cover = split_datasets(
@@ -61,7 +69,8 @@ def run_pipeline() -> None:
 
                     logging.info("Creating interactive weather visualization...")
                     plot_all_parameters(global_dataset, scandinavian_dataset)
-
+                    # Update last processed run
+                    last_date_str, last_hour = date_str, hour
             except Exception as exc:
                 logging.error(f"Failed to process datasets: {exc}")
                 continue
