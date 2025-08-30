@@ -23,7 +23,7 @@ def setup_widgets(fig, n_steps, ds):
     # Region checkbuttons
     ax_region = plt.axes([0.02, 0.25, 0.15, 0.2])
     fig.text(0.02 + 0.075, 0.42, "Coverage", ha="center", va="bottom", fontsize=12, fontweight="bold")
-    check_region = CheckButtons(ax_region, region_vars, [False, True])
+    check_region = CheckButtons(ax_region, region_vars, [True, True])
 
     # Time slider
     ax_slider = plt.axes([0.25, 0.03, 0.65, 0.03])
@@ -36,7 +36,7 @@ def setup_widgets(fig, n_steps, ds):
     ax_ticks.set_xticklabels([f"{int(s)}h" for s in ds["step"].values/3600000000000])
     ax_ticks.get_yaxis().set_ticks([])
 
-    return check_param, param_vars, check_region, region_vars, slider
+    return check_param, check_region, slider
 
 def update_params(current_params, label):
     """Toggle selected parameter."""
@@ -116,7 +116,7 @@ def plot_map(fig, ds1, ds2, selected_params, selected_regions, time_index,
             if p == "Total Precipitation":
                 tp_m = ds_t[tp_var] / 1000
                 im = tp_m.plot(ax=ax, cmap="Blues", transform=ccrs.PlateCarree(),
-                                       add_colorbar=False, vmin=0, vmax=0.050)
+                                add_colorbar=False, vmin=0, vmax=0.050)
                 cbar = fig.colorbar(im, ax=ax, orientation="vertical", pad=0.02, 
                                     fraction=0.04 if region == "Scandinavia" else 0.025)
                 cbar.set_label("Total Precipitation (m)")
@@ -172,11 +172,11 @@ def plot_all_parameters(ds1, ds2):
     suptitle = fig.suptitle("", fontsize=16)
 
     # create widgets
-    check_param, param_vars, check_region, region_vars, step_slider = setup_widgets(fig, n_steps, ds1)
-    widget_axes = [check_param.ax, check_region.ax, step_slider.ax]
-
-    plot_axes = []  # list to track plotting axes
-    colorbars = []  # list to track colorbars
+    check_param, check_region, step_slider = setup_widgets(fig, n_steps, ds1)
+    
+    # list to track plotting axes and colorbars
+    plot_axes = []  
+    colorbars = []
 
     # connect callbacks
     def on_param_change(label):
