@@ -30,6 +30,11 @@ It produces interactive maps with checkboxes and sliders that let you explore pr
 ---
 
 ## Setup
+Create a conda environment to install the required libraries:
+```bash
+conda create -n myenv
+conda activate myenv
+```
 Install dependencies found in requirements.txt:
 ```bash
 pip install -r requirements.txt
@@ -38,11 +43,9 @@ To run this visualization Python 3.9+ is needed.
 Dependencies include:
 ```ecmwf-opendata``` – ECMWF Open Data API client
 ```requests``` – for FMI downloads
-```xarray + cfgrib``` – GRIB file reading
+```xarray + cfgrib + eccodes``` – GRIB file reading
 ```matplotlib + cartopy``` – interactive map plotting
 
-Ensure you have ecCodes installed for ```cfgrib``` to work:
-```sudo apt-get install libeccodes0```
 ## Notes
 Grib forecast files are ignored by ```.gitignore``` (they can be several GB).
 ## Usage
