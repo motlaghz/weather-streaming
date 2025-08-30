@@ -161,7 +161,7 @@ def plot_map(fig, ds1, ds2, selected_params, selected_regions, time_index,
 def plot_all_parameters(ds1, ds2):
     """Main function to display interactive weather maps with widgets."""
     current_params = set(["Total Precipitation"])
-    current_regions = set(["Scandinavia"])
+    current_regions = set(["Scandinavia", "Global"])
     current_step = 0
     
     n_steps = len(ds1["step"])
