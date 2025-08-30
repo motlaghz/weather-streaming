@@ -62,7 +62,7 @@ def download_latest_run(target_global: str, target_scandinavia: str) -> tuple[st
                 "time": hour,
                 "target": target_global,
             }
-            client.retrieve(**params, t=2)
+            client.retrieve(**params)
             logging.info(f"Latest available for ECMWF run found: {date_str} {hour:02d} UTC")
             logging.info(f"Global data saved: {target_global}")
             return date_str, hour
