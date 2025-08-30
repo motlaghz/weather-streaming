@@ -6,18 +6,25 @@ import logging
 from datetime import datetime, timedelta, timezone
 import requests
 from ecmwf.opendata import Client
+from typing import Optional
 
-
-def download_latest_run(target_global: str, target_scandinavia: str) -> tuple[str, int]:
+def download_latest_run(
+    target_global: str, 
+    target_scandinavia: str,
+    last_date_str: Optional[str] = None,
+    last_hour: Optional[int] = None,
+) -> tuple[str, int, bool]:
     """
     Download the latest available weather forecast data for global and Scandinavian regions.
 
     Args:
         target_global (str): Path to save the global forecast GRIB file.
         target_scandinavia (str): Path to save the Scandinavian forecast GRIB file.
+        last_date_str (str, optional): Previously downloaded date string (YYYYMMDD).
+        last_hour (int, optional): Previously downloaded hour (UTC).
 
     Returns:
-        tuple[str, int]: The date string (YYYYMMDD) and hour (UTC) of the latest available run.
+        tuple[str, int, bool]: The date string, hour, and a flag indicating if new data was downloaded.
     """
     logging.basicConfig(level=logging.INFO)
     client = Client(model="aifs-single", source="ecmwf", resol="0p25")
@@ -30,6 +37,14 @@ def download_latest_run(target_global: str, target_scandinavia: str) -> tuple[st
         origin_datetime = datetime.combine(date_only, datetime.min.time()) + timedelta(
             hours=hour
         )
+
+        # Skip if this run was already downloaded (but only if it's not the first time)
+        if last_date_str is not None and last_hour is not None:
+            if (date_str, hour) == (last_date_str, last_hour):
+                logging.info(
+                    f"No new run available ({date_str} {hour:02d} UTC). Skipping download."
+                )
+                return date_str, hour, False
         try:
             # Download Scandinavian regional data
             url = (
@@ -65,7 +80,7 @@ def download_latest_run(target_global: str, target_scandinavia: str) -> tuple[st
             client.retrieve(**params)
             logging.info(f"Latest available for ECMWF run found: {date_str} {hour:02d} UTC")
             logging.info(f"Global data saved: {target_global}")
-            return date_str, hour
+            return date_str, hour, True
         except Exception as exc:
             logging.warning(f"Run {date_str} {hour:02d} UTC not available: {exc}")
             continue
@@ -75,4 +90,7 @@ def download_latest_run(target_global: str, target_scandinavia: str) -> tuple[st
     logging.warning(
         "No available runs found for today. Falling back to yesterday 18 UTC."
     )
-    return yesterday, 18
+    if (yesterday, 18) == (last_date_str, last_hour):
+        logging.info(f"No new run available ({yesterday} 18 UTC). Skipping download.")
+        return yesterday, 18, False
+    return yesterday, 18, True
