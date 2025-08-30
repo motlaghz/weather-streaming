@@ -59,3 +59,4 @@ The script will:
  - Wait for one hour, then re-download and update.
 
 ## Example Screenshot
+![Forecast map for second time step for Precipitation [m]](https://github.com/motlaghz/weather-streaming/blob/main/figs/6hPrec.png)
