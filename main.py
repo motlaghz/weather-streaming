@@ -1,25 +1,82 @@
+"""
+Main pipeline for weather data streaming and visualization.
+
+This module orchestrates the download, processing, and visualization of weather forecast data
+for both global and Scandinavian regions.
+"""
+
+import logging
 import time
 import xarray as xr
 from ingesting import download_latest_run
 from plotting import plot_all_parameters
 from scandinavia_split import split_datasets
 
-def run_pipeline():
-    try:    
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+# Constants
+GLOBAL_FORECAST_FILE = "forecast_global.grib"
+SCANDINAVIA_FORECAST_FILE = "forecast_scandinavia.grib"
+UPDATE_INTERVAL_SECONDS = 3600  # 1 hour
+
+
+def run_pipeline() -> None:
+    """
+    Run the main weather data pipeline.
+
+    Downloads the latest weather forecasts, processes the data, and displays
+    interactive visualizations. Runs continuously with periodic updates.
+    """
+    logging.info("Starting weather data pipeline...")
+
+    try:
         while True:
-            # Download forecasts
-            _ , _ = download_latest_run("forecast_global.grib","forecast_scandinavia.grib")
-            file_name_global = "forecast_global.grib" 
+            logging.info("Starting new pipeline iteration...")
 
-            tp, u10, v10, tcc = split_datasets("forecast_scandinavia.grib")
-            
-            with xr.open_dataset(file_name_global, engine="cfgrib", backend_kwargs={"indexpath": ""}) as ds1, xr.merge([tp, u10, v10, tcc],compat="override") as ds2:
-                plot_all_parameters(ds1, ds2)
+            # Download latest forecast data
+            date_str, hour = download_latest_run(
+                GLOBAL_FORECAST_FILE, SCANDINAVIA_FORECAST_FILE
+            )
+            logging.info(f"Downloaded forecasts for {date_str} {hour:02d} UTC")
 
-            # Wait before next update (e.g., 1 hour)
-            time.sleep(3600)
+            # Process Scandinavian data
+            precipitation, u_wind, v_wind, cloud_cover = split_datasets(
+                SCANDINAVIA_FORECAST_FILE
+            )
+            logging.info("Split Scandinavian datasets successfully")
+
+            # Open datasets and create visualization
+            try:
+                with xr.open_dataset(
+                    GLOBAL_FORECAST_FILE,
+                    engine="cfgrib",
+                    decode_timedelta=True,
+                    backend_kwargs={"indexpath": ""},
+                ) as global_dataset, xr.merge(
+                    [precipitation, u_wind, v_wind, cloud_cover], compat="override"
+                ) as scandinavian_dataset:
+
+                    logging.info("Creating interactive weather visualization...")
+                    plot_all_parameters(global_dataset, scandinavian_dataset)
+
+            except Exception as exc:
+                logging.error(f"Failed to process datasets: {exc}")
+                continue
+
+            logging.info(
+                f"Waiting {UPDATE_INTERVAL_SECONDS // 60} minutes before next update..."
+            )
+            time.sleep(UPDATE_INTERVAL_SECONDS)
+
     except KeyboardInterrupt:
-        print("\nPipeline stopped gracefully.")
-        
+        logging.info("Pipeline stopped gracefully by user.")
+    except Exception as exc:
+        logging.error(f"Pipeline failed with error: {exc}")
+        raise
+
+
 if __name__ == "__main__":
     run_pipeline()
