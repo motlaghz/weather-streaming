@@ -1,4 +1,5 @@
 ecmwf-opendata
+requests
 numpy
 xarray
 matplotlib

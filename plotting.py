@@ -3,7 +3,6 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import numpy as np
 from matplotlib.widgets import CheckButtons, Slider
-from matplotlib.gridspec import GridSpec
 
 # -------------------------------
 # Helper functions
