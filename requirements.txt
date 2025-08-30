@@ -1,4 +1,6 @@
 ecmwf-opendata
+eccodes
+cfgrib
 requests
 numpy
 xarray
